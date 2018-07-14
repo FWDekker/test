@@ -1,3 +1,5 @@
+// Yes, this file is compilable.
+
 typealias `‮🔤‭` = String
 
 private fun Any.`🔤`() = this.toString()
