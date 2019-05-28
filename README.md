@@ -3,4 +3,4 @@ test
 
 fg
 
-[text](directory/file with space.txt)
+[text](directory/file%20with%20space.txt)
