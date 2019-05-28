@@ -2,3 +2,5 @@
 test
 
 fg
+
+[releases](releases/)
