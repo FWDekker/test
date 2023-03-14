@@ -1,0 +1,29 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  prerequisite:
+    if: "!contains(github.event.head_commit.message, '[skip cd]')"
+    runs-on: ubuntu-latest
+    steps:
+      - name: nop
+        run: true
+
+  action1:
+    needs: [ prerequisite ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Action
+        run: action1
+
+  action2:
+    needs: [ prerequisite ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Action
+        run: action2
