@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  prerequisite:
+  release-needed:
     if: "!contains(github.event.head_commit.message, '[skip cd]')"
     runs-on: ubuntu-latest
     steps:
@@ -15,15 +15,15 @@ jobs:
         run: true
 
   action1:
-    needs: [ prerequisite ]
+    needs: [ release-needed ]
     runs-on: ubuntu-latest
     steps:
       - name: Action
-        run: action1
+        run: true
 
   action2:
-    needs: [ prerequisite ]
+    needs: [ release-needed ]
     runs-on: ubuntu-latest
     steps:
       - name: Action
-        run: action2
+        run: true
