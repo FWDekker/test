@@ -22,7 +22,7 @@ jobs:
         run: true
 
   action2:
-    needs: [ check-release-needed ]
+    needs: [ check-release-needed]
     runs-on: ubuntu-latest
     steps:
       - name: Action
