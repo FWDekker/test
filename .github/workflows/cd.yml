@@ -30,7 +30,7 @@ jobs:
         run: |
           echo "::group::Place .deb"
           mkdir -p test-deb/deb/
-          cp test/mommy-1.2.4.deb test-deb/deb/
+          cp test/*.deb test-deb/deb/
           echo "::endgroup::"
 
           echo "::group::Update repo"
