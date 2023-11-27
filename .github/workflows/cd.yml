@@ -4,26 +4,46 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
-  check-release-needed:
-    if: "!(contains(github.event.head_commit.message, '[cd skip]') || contains(github.event.head_commit.message, '[skip cd]'))"
+  job1:
     runs-on: ubuntu-latest
     steps:
-      - name: nop
-        run: true
+      - name: Checkout test
+        uses: actions/checkout@v4
+        with:
+          repository: fwdekker/test
+          path: test
+          fetch-depth: 0
+      - name: Checkout test-deb
+        uses: actions/checkout@v4
+        with:
+          repository: fwdekker/test-deb
+          path: test-deb
+          fetch-depth: 0
+          token: ${{ secrets.personal_access_token }}
+      - name: Import GPG key
+        run: echo "$gpg_private_key" | gpg --import
+        env:
+          gpg_private_key: ${{ secrets.gpg_private_key }}
+      - name: Update test-deb
+        run: |
+          echo "::group::Place .deb"
+          mkdir -p test-deb/deb/
+          cp test/mommy-1.2.4.deb test-deb/deb/
+          echo "::endgroup::"
 
-  action1:
-    needs: [ check-release-needed ]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Action
-        run: true
+          echo "::group::Update repo"
+          cd test-deb/
+          ./update.sh
+          echo "::endgroup::"
 
-  action2:
-    needs: [ check-release-needed]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Action
-        run: true
+          echo "::group::Commit update"
+          git config --global user.name "FWDekkerBot"
+          git config --global user.email "bot@fwdekker.com"
+          git commit -am "le update :3"
+          echo "::endgroup::"
+
+          echo "::group::Push changes"
+          git push origin
+          echo "::endgroup::"
