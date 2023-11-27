@@ -39,6 +39,7 @@ jobs:
           echo "::endgroup::"
 
           echo "::group::Commit update"
+          git add --all
           git config --global user.name "FWDekkerBot"
           git config --global user.email "bot@fwdekker.com"
           git commit -am "le update :3"
