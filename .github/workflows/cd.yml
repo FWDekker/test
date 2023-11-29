@@ -18,6 +18,7 @@ jobs:
       - name: nop
         run: true
 
+
   build-linux:
     needs: [ check-release-needed ]
     runs-on: ubuntu-latest
@@ -38,8 +39,110 @@ jobs:
           name: dist
           path: dist/mommy*
 
+  build-macos:
+    needs: [ check-release-needed ]
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: fwdekker/mommy
+      - name: Install fpm
+        run: sudo gem install --no-document fpm
+      - name: Build package
+        run: make dist/osxpkg
+      - name: Upload built package
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist/mommy*
+
+  build-freebsd:
+    needs: [ check-release-needed ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: fwdekker/mommy
+      - name: Install fpm && Build package
+        uses: vmactions/freebsd-vm@v1
+        with:
+          usesh: true
+          prepare: |
+            set -e
+
+            echo "::group::Install basic packages"
+            pkg install -y git gmake
+            echo "::endgroup::"
+
+            # fpm
+              echo "::group::Install fpm: Actually install fpm"
+              pkg install -y devel/ruby-gems
+              gem install --no-document fpm
+              echo "::endgroup::"
+
+              echo "::group::Install fpm: Install gtar (workaround for https://github.com/jordansissel/fpm/pull/1922)"
+              pkg install -y gtar
+              mv /usr/bin/tar /usr/bin/bsdtar
+              mv /usr/local/bin/gtar /usr/bin/tar
+              echo "::endgroup::"
+            # /fpm
+
+            echo "::group::Ignore ownership issues"
+            git config --global --add safe.directory "$GITHUB_WORKSPACE"
+            echo "::endgroup::"
+          run: |
+            set -e
+
+            gmake dist/freebsd
+      - name: Upload built package
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist/mommy*
+
+  build-openbsd:
+    needs: [ check-release-needed ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: fwdekker/mommy
+      - name: Install fpm && Build package
+        uses: vmactions/openbsd-vm@v1
+        with:
+          usesh: true
+          prepare: |
+            set -e
+
+            echo "::group::Install basic packages"
+            pkg_add git gmake
+            echo "::endgroup::"
+
+            echo "::group::Install fpm"
+            pkg_add "$(pkg_info -Q ruby | grep "^ruby-[0-9]" | tail -n 1)"
+            /usr/local/bin/gem* install --no-document fpm
+            ln -s /usr/local/bin/fpm* /usr/local/bin/fpm  # Symlink 'fpm' to latest version
+            echo "::endgroup::"
+
+            echo "::group::Ignore ownership issues"
+            git config --global --add safe.directory "$GITHUB_WORKSPACE"
+            echo "::endgroup::"
+          run: |
+            set -e
+
+            gmake dist/openbsd
+      - name: Upload built package
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist/mommy*
+
+
   release-mommy:
-    needs: [ build-linux ]
+    needs: [ build-linux, build-macos, build-freebsd, build-openbsd ]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name != 'workflow_dispatch'
 
@@ -68,46 +171,48 @@ jobs:
           body_path: RELEASE_NOTES.md
           files: mommy*
 
-  release-deb:
+  release-apt:
     needs: [ release-mommy ]
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download built packages
-        uses: actions/download-artifact@v3
-        with:
-          name: dist
-          path: mommy-dist
       - name: Checkout mommy
         uses: actions/checkout@v4
         with:
           repository: fwdekker/mommy
-          path: mommy
-      - name: Checkout test-deb
+          path: src-mommy
+      - name: Extract version number
+        run: echo "MOMMY_VERSION=v$(head -n 1 ./src-mommy/version)" >> $GITHUB_ENV
+
+      - name: Checkout apt-mommy
         uses: actions/checkout@v4
         with:
-          repository: fwdekker/test-deb
-          path: mommy-deb
+          repository: fwdekker/apt-test
+          path: apt-mommy
+          ref: master
+          fetch-depth: 0
+          # Required to push '.deb' to repository
           token: ${{ secrets.personal_access_token }}
-      - name: Extract version number
-        run: echo "MOMMY_VERSION=v$(head -n 1 ./mommy/version)" >> $GITHUB_ENV
-      - name: Import GPG key
-        run: echo "$gpg_private_key" | gpg --import
-        env:
-          gpg_private_key: ${{ secrets.gpg_private_key }}
-      - name: Update mommy-deb
-        run: |
-          echo "::group::Place .deb"
-          mkdir -p mommy-deb/deb/
-          cp mommy-dist/*.deb mommy-deb/deb/
-          echo "::endgroup::"
+      - name: Download built packages
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: dist-mommy
+      - name: Move .deb into apt-mommy
+        run: cp dist-mommy/*.deb apt-mommy/deb/
 
-          echo "::group::Update repo"
-          cd mommy-deb/
+      - name: Import GPG key
+        run: echo "$apt_gpg_private_key" | gpg --import
+        env:
+          apt_gpg_private_key: ${{ secrets.apt_gpg_private_key }}
+      - name: Update apt-mommy
+        working-directory: apt-mommy
+        run: |
+          echo "::group::Run update script"
           ./update.sh
           echo "::endgroup::"
 
-          echo "::group::Commit update"
+          echo "::group::Commit changes"
           git add --all
           git config --global user.name "FWDekkerBot"
           git config --global user.email "bot@fwdekker.com"
