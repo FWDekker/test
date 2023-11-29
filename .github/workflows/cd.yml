@@ -1,96 +1,10 @@
 name: CD
 
-on:
-  # 'push' creates a real release
-  push:
-    branches: [ main ]
-  # 'workflow_dispatch' does a dry run of the workflow
-  workflow_dispatch:
-
-permissions:
-  contents: write
-  discussions: write
-  packages: read
+on: [ workflow_dispatch ]
 
 jobs:
-  check-release-needed:
-    if: "!(contains(github.event.head_commit.message, '[cd skip]') || contains(github.event.head_commit.message, '[skip cd]'))"
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: nop
-        run: true
-
-
-  build-linux:
-    needs: [ check-release-needed ]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          repository: fwdekker/mommy
-      - name: Install fpm and build dependencies
-        run: |
-          sudo apt install -y rubygems libarchive-tools rpm zstd
-          sudo gem install --no-document fpm
-      - name: Build packages
-        run: make dist/generic dist/apk dist/deb dist/rpm dist/pacman
-      - name: Upload built package
-        uses: actions/upload-artifact@v3
-        with:
-          name: dist
-          path: dist/mommy*
-
-  build-macos:
-    needs: [ check-release-needed ]
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          repository: fwdekker/mommy
-      - name: Install fpm
-        run: sudo gem install --no-document fpm
-      - name: Build package
-        run: make dist/osxpkg
-      - name: Upload built package
-        uses: actions/upload-artifact@v3
-        with:
-          name: dist
-          path: dist/mommy*
-
-
-  release-mommy:
-    needs: [ build-linux, build-macos ]
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          repository: fwdekker/mommy
-          ref: main
-      - name: Download built packages
-        uses: actions/download-artifact@v3
-        with:
-          name: dist
-      - name: Extract version number
-        run: echo "MOMMY_VERSION=v$(head -n 1 ./version)" >> $GITHUB_ENV
-      - name: Extract release notes
-        id: extract-release-notes
-        uses: ffurrer2/extract-release-notes@v1
-        with:
-          release_notes_file: RELEASE_NOTES.md
-      - name: Prepend release notes
-        run: |
-          echo -e "mommy can also be installed using a package manager. [check the readme for more info](https://github.com/FWDekker/mommy/tree/${MOMMY_VERSION}#-installation)~\n" | cat - RELEASE_NOTES.md | tee RELEASE_NOTES.md
-      - name: Create release
-        uses: softprops/action-gh-release@v1
-        if: github.event_name != 'workflow_dispatch'
-        with:
-          draft: false
-          prerelease: false
-          tag_name: ${{ env.MOMMY_VERSION }}
-          body_path: RELEASE_NOTES.md
-          files: mommy*
-          discussion_category_name: Announcements
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
