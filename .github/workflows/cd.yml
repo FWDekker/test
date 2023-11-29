@@ -9,7 +9,7 @@ on:
 
 permissions:
   contents: write
-  #discussions: write
+  discussions: write
   packages: read
 
 jobs:
@@ -93,4 +93,4 @@ jobs:
           tag_name: ${{ env.MOMMY_VERSION }}
           body_path: RELEASE_NOTES.md
           files: mommy*
-          discussion_category_name: error
+          discussion_category_name: Announcements
