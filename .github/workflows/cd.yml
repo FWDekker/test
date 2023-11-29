@@ -1,17 +1,19 @@
 name: CD
 
 on:
+  # 'push' creates a real release
   push:
     branches: [ main ]
+  # 'workflow_dispatch' does a dry run of the workflow
   workflow_dispatch:
 
 permissions:
   contents: write
+  #discussions: write
   packages: read
 
 jobs:
   check-release-needed:
-    # Note that 'workflow_dispatch' is never skipped
     if: "!(contains(github.event.head_commit.message, '[cd skip]') || contains(github.event.head_commit.message, '[skip cd]'))"
     runs-on: ubuntu-latest
     steps:
@@ -61,13 +63,13 @@ jobs:
   release-mommy:
     needs: [ build-linux, build-macos ]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           repository: fwdekker/mommy
+          ref: main
       - name: Download built packages
         uses: actions/download-artifact@v3
         with:
@@ -79,7 +81,10 @@ jobs:
         uses: ffurrer2/extract-release-notes@v1
         with:
           release_notes_file: RELEASE_NOTES.md
-      - name: Checkout release
+      - name: Prepend release notes
+        run: |
+          echo -e "mommy can also be installed using a package manager. [check the readme for more info](https://github.com/FWDekker/mommy/tree/${MOMMY_VERSION}#-installation)~\n" | cat - RELEASE_NOTES.md | tee RELEASE_NOTES.md
+      - name: Create release
         uses: softprops/action-gh-release@v1
         if: github.event_name != 'workflow_dispatch'
         with:
@@ -88,60 +93,4 @@ jobs:
           tag_name: ${{ env.MOMMY_VERSION }}
           body_path: RELEASE_NOTES.md
           files: mommy*
-
-  release-apt:
-    needs: [ release-mommy ]
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout mommy
-        uses: actions/checkout@v4
-        with:
-          repository: fwdekker/mommy
-          path: src-mommy
-      - name: Extract version number
-        run: echo "MOMMY_VERSION=v$(head -n 1 ./src-mommy/version)" >> $GITHUB_ENV
-
-      - name: Checkout apt-mommy
-        uses: actions/checkout@v4
-        with:
-          repository: fwdekker/apt-test
-          path: apt-mommy
-          ref: main
-          fetch-depth: 0
-          # Required to push '.deb' to repository
-          token: ${{ secrets.personal_access_token }}
-      - name: Download built packages
-        uses: actions/download-artifact@v3
-        with:
-          name: dist
-          path: dist-mommy
-      - name: Move .deb into apt-mommy
-        run: cp dist-mommy/*.deb apt-mommy/deb/
-
-      - name: Import GPG key
-        run: echo "$apt_gpg_private_key" | gpg --import
-        env:
-          apt_gpg_private_key: ${{ secrets.apt_gpg_private_key }}
-      - name: Update apt-mommy
-        working-directory: apt-mommy
-        run: |
-          echo "::group::Run update script"
-          ./update.sh
-          echo "::endgroup::"
-
-          echo "::group::Commit changes"
-          git add --all
-          git config --global user.name "FWDekkerBot"
-          git config --global user.email "bot@fwdekker.com"
-          git commit -am "🔖 mommy added package mommy $MOMMY_VERSION~"
-          echo "::endgroup::"
-
-          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
-            echo "::group::Push changes"
-            git push origin
-            echo "::endgroup::"
-          else
-            echo "::group::Not pushing changes"
-            echo "::endgroup::"
-          fi;
+          discussion_category_name: error
