@@ -81,6 +81,7 @@ jobs:
           release_notes_file: RELEASE_NOTES.md
       - name: Checkout release
         uses: softprops/action-gh-release@v1
+        if: github.event_name != 'workflow_dispatch'
         with:
           draft: false
           prerelease: false
@@ -136,6 +137,11 @@ jobs:
           git commit -am "🔖 mommy added package mommy $MOMMY_VERSION~"
           echo "::endgroup::"
 
-          echo "::group::Push changes"
-          git push origin
-          echo "::endgroup::"
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ]
+            echo "::group::Push changes"
+            git push origin
+            echo "::endgroup::"
+          else
+            echo "::group::Not pushing changes"
+            echo "::endgroup::"
+          fi;
