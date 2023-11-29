@@ -189,7 +189,7 @@ jobs:
         with:
           repository: fwdekker/apt-test
           path: apt-mommy
-          ref: master
+          ref: main
           fetch-depth: 0
           # Required to push '.deb' to repository
           token: ${{ secrets.personal_access_token }}
