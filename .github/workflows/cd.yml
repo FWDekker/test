@@ -57,92 +57,9 @@ jobs:
           name: dist
           path: dist/mommy*
 
-  build-freebsd:
-    needs: [ check-release-needed ]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          repository: fwdekker/mommy
-      - name: Install fpm && Build package
-        uses: vmactions/freebsd-vm@v1
-        with:
-          usesh: true
-          prepare: |
-            set -e
-
-            echo "::group::Install basic packages"
-            pkg install -y git gmake
-            echo "::endgroup::"
-
-            # fpm
-              echo "::group::Install fpm: Actually install fpm"
-              pkg install -y devel/ruby-gems
-              gem install --no-document fpm
-              echo "::endgroup::"
-
-              echo "::group::Install fpm: Install gtar (workaround for https://github.com/jordansissel/fpm/pull/1922)"
-              pkg install -y gtar
-              mv /usr/bin/tar /usr/bin/bsdtar
-              mv /usr/local/bin/gtar /usr/bin/tar
-              echo "::endgroup::"
-            # /fpm
-
-            echo "::group::Ignore ownership issues"
-            git config --global --add safe.directory "$GITHUB_WORKSPACE"
-            echo "::endgroup::"
-          run: |
-            set -e
-
-            gmake dist/freebsd
-      - name: Upload built package
-        uses: actions/upload-artifact@v3
-        with:
-          name: dist
-          path: dist/mommy*
-
-  build-openbsd:
-    needs: [ check-release-needed ]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          repository: fwdekker/mommy
-      - name: Install fpm && Build package
-        uses: vmactions/openbsd-vm@v1
-        with:
-          usesh: true
-          prepare: |
-            set -e
-
-            echo "::group::Install basic packages"
-            pkg_add git gmake
-            echo "::endgroup::"
-
-            echo "::group::Install fpm"
-            pkg_add "$(pkg_info -Q ruby | grep "^ruby-[0-9]" | tail -n 1)"
-            /usr/local/bin/gem* install --no-document fpm
-            ln -s /usr/local/bin/fpm* /usr/local/bin/fpm  # Symlink 'fpm' to latest version
-            echo "::endgroup::"
-
-            echo "::group::Ignore ownership issues"
-            git config --global --add safe.directory "$GITHUB_WORKSPACE"
-            echo "::endgroup::"
-          run: |
-            set -e
-
-            gmake dist/openbsd
-      - name: Upload built package
-        uses: actions/upload-artifact@v3
-        with:
-          name: dist
-          path: dist/mommy*
-
 
   release-mommy:
-    needs: [ build-linux, build-macos, build-freebsd, build-openbsd ]
+    needs: [ build-linux, build-macos ]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name != 'workflow_dispatch'
 
