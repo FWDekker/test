@@ -1,8 +1,8 @@
 name: CD
 
 on:
-  push:
-    branches: [ main ]
+  release:
+    types: [ published ]
   workflow_dispatch:
 
 jobs:
@@ -40,7 +40,7 @@ jobs:
         working-directory: main/
         run: |
           # TODO: Remove the line below!
-          sed -e 's/-next/-next3/' -i ./gradle.properties
+          sed -e 's/-next/-next4/' -i ./gradle.properties
           echo "RANDOMNESS_VERSION=v$(cat gradle.properties | grep '^version=' | sed 's/^.*=//')" >> $GITHUB_ENV
 
       - name: Generate new documentation
