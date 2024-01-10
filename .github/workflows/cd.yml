@@ -1,64 +1,19 @@
-name: CD
-
-on:
-  release:
-    types: [ published ]
-  workflow_dispatch:
-
+on: [push]
 jobs:
-  build-pages:
-    runs-on: ubuntu-latest
-
+  netbsd-job:
+    runs-on: ubuntu-22.04
     steps:
-      - name: Checkout Randomness source code
-        uses: actions/checkout@v4
+      - uses: vmactions/netbsd-vm@v1
         with:
-          repository: fwdekker/intellij-randomness
-          ref: modern-dokka
-          path: main
-      - name: Checkout Randomness pages
-        uses: actions/checkout@v4
-        with:
-          repository: fwdekker/test
-          ref: gh-pages
-          path: gh-pages
-          # Required to push updated documentation to repository
-          token: ${{ secrets.personal_access_token }}
+          run: |
+            set -e
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-      - name: Set up Gradle
-        uses: gradle/gradle-build-action@v2
-        with:
-          build-root-directory: main/
-          generate-job-summary: false
+            touch packlist buildinfo
 
-      - name: Extract version number
-        working-directory: main/
-        run: |
-          # TODO: Remove the line below!
-          sed -e 's/-next/-next4/' -i ./gradle.properties
-          echo "RANDOMNESS_VERSION=v$(cat gradle.properties | grep '^version=' | sed 's/^.*=//')" >> $GITHUB_ENV
+            echo "::group::Without buildinfo"
+            /usr/sbin/pkg_create -c -comment -d -desc -f packlist pkg-name.tgz
+            echo "::endgroup::"
 
-      - name: Generate new documentation
-        working-directory: main/
-        run: ./gradlew dokkaHtml -Pdokka.pagesDir="${{ github.workspace }}/gh-pages/"
-
-      - name: Move new documentation into gh-pages
-        run: |
-          rm -rf gh-pages/*
-          mv main/build/dokka/html/* gh-pages/
-          rm -rf gh-pages/older/**/.git
-
-      - name: Push new documentation
-        working-directory: gh-pages/
-        run: |
-          git config --global user.name "FWDekkerBot"
-          git config --global user.email "bot@fwdekker.com"
-          git add --all
-          git commit -m "Update for ${RANDOMNESS_VERSION}"
-
-          git push origin gh-pages
+            echo "::group::With buildinfo"
+            /usr/sbin/pkg_create -B ./buildinfo -c -comment -d -desc -f packlist pkg-name.tgz
+            echo "::endgroup::"
