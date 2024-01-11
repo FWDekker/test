@@ -12,23 +12,22 @@ jobs:
   pre-flight-checks:
     runs-on: ubuntu-latest
     outputs:
-      MOMMY_VERSION: ${{ steps.output_version.outputs.MOMMY_VERSION }}
+      MOMMY_VERSION: ${{ steps.mommy_version.outputs.MOMMY_VERSION }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           repository: fwdekker/mommy
-      - name: Fetch tags
-        # Using `fetch-tags` option of `actions/checkout` does not work properly!
-        run: git fetch --prune --unshallow --tags
       - name: Extract mommy's version number
-        run: echo "MOMMY_VERSION=v$(head -n 1 ./version)" >> "$GITHUB_ENV"
-      - name: Output mommy's version number
-        id: output_version
-        run: echo "MOMMY_VERSION=$MOMMY_VERSION" >> "$GITHUB_OUTPUT"
+        id: mommy_version
+        run: |
+          echo "MOMMY_VERSION=v$(head -n 1 ./version)" >> "$GITHUB_ENV"
+          echo "MOMMY_VERSION=$MOMMY_VERSION" >> "$GITHUB_OUTPUT"
       - name: Check if release already exists
         if: ${{ github.event.inputs.dry_run == 'false' }}
+        # Using `fetch-tags` option of `actions/checkout` does not work properly!
         run: |
+          git fetch --prune --unshallow --tags
           ! git show-ref --tags "$MOMMY_VERSION" --quiet
 
   intermediate:
