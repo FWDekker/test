@@ -9,7 +9,7 @@ on:
         default: true
 
 jobs:
-  preflightchecks:
+  pre-flight-checks:
     runs-on: ubuntu-latest
     outputs:
       MOMMY_VERSION: ${{ steps.mommy_version.outputs.MOMMY_VERSION }}
@@ -32,22 +32,22 @@ jobs:
           ! git show-ref --tags "$MOMMY_VERSION" --quiet
 
   intermediate:
-    needs: [ preflightchecks ]
+    needs: [ pre-flight-checks ]
     runs-on: ubuntu-latest
 
     env:
-      MOMMY_VERSION: ${{ needs.preflightchecks.outputs.MOMMY_VERSION }}
+      MOMMY_VERSION: ${{ needs.pre-flight-checks.outputs.MOMMY_VERSION }}
 
     steps:
       - name: Output version
         run: echo "$MOMMY_VERSION"
 
   run-a-thing:
-    needs: [ preflightchecks, intermediate ]
+    needs: [ pre-flight-checks, intermediate ]
     runs-on: ubuntu-latest
 
     env:
-      MOMMY_VERSION: ${{ needs.preflightchecks.outputs.MOMMY_VERSION }}
+      MOMMY_VERSION: ${{ needs.pre-flight-checks.outputs.MOMMY_VERSION }}
 
     steps:
       - name: Check in yml
