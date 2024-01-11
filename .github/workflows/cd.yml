@@ -30,7 +30,7 @@ jobs:
         id: output_version
         run: echo "MOMMY_VERSION=$MOMMY_VERSION" >> "$GITHUB_OUTPUT"
       - name: Check if release already exists
-        if: ${{ ! github.event.inputs.dry_run }}
+        if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
           ! git show-ref --tags "$MOMMY_VERSION" --quiet
 
@@ -40,7 +40,7 @@ jobs:
     steps:
       - name: So this is a thing
         run: |
-          if [ "${{ ! github.event.inputs.dry_run }}" ]; then
+          if [ "${{ github.event.inputs.dry_run == 'false' }}" ]; then
             echo "::group::NOT A DRY RUN"
             echo "::endgroup::"
           else
