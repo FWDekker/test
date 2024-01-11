@@ -35,8 +35,12 @@ jobs:
     needs: [ pre-flight-checks ]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        if: ${{ ! github.event.inputs.dry_run }}
-        with:
-          repository: fwdekker/mommy
+      - name: So this is a thing
+        run: |
+          if [ "${{ ! github.event.inputs.dry_run }}" ]; then
+            echo "::group::NOT A DRY RUN"
+            echo "::endgroup::"
+          else
+            echo "::group::A DRY RUN"
+            echo "::endgroup::"
+          fi;
