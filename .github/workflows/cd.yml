@@ -27,8 +27,9 @@ jobs:
         id: output_version
         run: echo "MOMMY_VERSION=$MOMMY_VERSION" >> "$GITHUB_OUTPUT"
       - name: Check if release already exists
+        if: ${{ ! github.event.inputs.dry_run }}
         run: |
-          ! git show-ref --tags "v1.2.0" --quiet
+          ! git show-ref --tags "$MOMMY_VERSION" --quiet
 
   run-a-thing:
     needs: [ pre-flight-checks ]
