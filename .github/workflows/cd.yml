@@ -43,7 +43,7 @@ jobs:
         run: echo "$MOMMY_VERSION"
 
   run-a-thing:
-    needs: [ intermediate ]
+    needs: [ preflightchecks, intermediate ]
     runs-on: ubuntu-latest
 
     env:
