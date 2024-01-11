@@ -34,9 +34,12 @@ jobs:
     needs: [ pre-flight-checks ]
     runs-on: ubuntu-latest
 
+    env:
+      MOMMY_VERSION: ${{ needs.pre-flight-checks.outputs.MOMMY_VERSION }}
+
     steps:
-      - name: Dinges
-        run: exit 0
+      - name: Output version
+        run: echo "$MOMMY_VERSION"
 
   run-a-thing:
     needs: [ intermediate ]
