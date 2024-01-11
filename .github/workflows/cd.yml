@@ -19,6 +19,8 @@ jobs:
         with:
           repository: fwdekker/mommy
           fetch-tags: true
+      - name: Fetch ags
+        run: git fetch --prune --unshallow --tags
       - name: Extract mommy's version number
         run: echo "MOMMY_VERSION=v$(head -n 1 ./version)" >> "$GITHUB_ENV"
       - name: Output mommy's version number
