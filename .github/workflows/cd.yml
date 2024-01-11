@@ -35,10 +35,18 @@ jobs:
           ! git show-ref --tags "$MOMMY_VERSION" --quiet
 
   run-a-thing:
+    env:
+      is_dry_run: ${{ github.event.inputs.dry_run }}
+
     needs: [ pre-flight-checks ]
     runs-on: ubuntu-latest
     steps:
-      - name: So this is a thing
+      - name: Check in yml
+        if: ${{ github.event.inputs.dry_run == 'false' }}
+        run: |
+          echo "::group::NOT A DRY RUN"
+          echo "::endgroup::"
+      - name: Check inside run
         run: |
           if [ "${{ github.event.inputs.dry_run == 'false' }}" ]; then
             echo "::group::NOT A DRY RUN"
