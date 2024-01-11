@@ -17,12 +17,9 @@ jobs:
           [ "${{ github.event.inputs.dry_run }}" = "true" ]
 
   pre-flight-checks:
-    env:
-      is_dry_run: ${{ github.event.inputs.dry_run }}
-
     runs-on: ubuntu-latest
     outputs:
-      mommy_version: ${{ steps.output_version.outputs.MOMMY_VERSION }}
+      MOMMY_VERSION: ${{ steps.output_version.outputs.MOMMY_VERSION }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,7 +40,7 @@ jobs:
 
   run-a-thing:
     env:
-      is_dry_run: ${{ github.event.inputs.dry_run }}
+      MOMMY_VERSION: ${{ needs.pre-flight-checks.outputs.MOMMY_VERSION }}
 
     needs: [ pre-flight-checks ]
     runs-on: ubuntu-latest
@@ -62,3 +59,5 @@ jobs:
             echo "::group::A DRY RUN"
             echo "::endgroup::"
           fi;
+      - name: Output version
+        run: echo "$MOMMY_VERSION"
