@@ -9,6 +9,13 @@ on:
         default: true
 
 jobs:
+  dry-run:
+    name: Dry run?
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          [ "${{ github.event.inputs.dry_run }}" = "true" ]
+
   pre-flight-checks:
     env:
       is_dry_run: ${{ github.event.inputs.dry_run }}
