@@ -21,7 +21,8 @@ jobs:
       - name: Extract mommy's version number
         id: mommy_version
         run: |
-          echo "MOMMY_VERSION=v$(head -n 1 ./version)" >> "$GITHUB_ENV"
+          MOMMY_VERSION="v$(head -n 1 ./version)"
+          echo "MOMMY_VERSION=$MOMMY_VERSION" >> "$GITHUB_ENV"
           echo "MOMMY_VERSION=$MOMMY_VERSION" >> "$GITHUB_OUTPUT"
       - name: Check if release already exists
         if: ${{ github.event.inputs.dry_run == 'false' }}
