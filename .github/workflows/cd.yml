@@ -31,12 +31,21 @@ jobs:
         run: |
           ! git show-ref --tags "$MOMMY_VERSION" --quiet
 
+  intermediate:
+    needs: [ pre-flight-checks ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Dinges
+        run: exit 0
+
   run-a-thing:
+    needs: [ intermediate ]
+    runs-on: ubuntu-latest
+
     env:
       MOMMY_VERSION: ${{ needs.pre-flight-checks.outputs.MOMMY_VERSION }}
 
-    needs: [ pre-flight-checks ]
-    runs-on: ubuntu-latest
     steps:
       - name: Check in yml
         if: ${{ github.event.inputs.dry_run == 'false' }}
