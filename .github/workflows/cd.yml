@@ -10,6 +10,9 @@ on:
 
 jobs:
   pre-flight-checks:
+    env:
+      is_dry_run: ${{ github.event.inputs.dry_run }}
+
     runs-on: ubuntu-latest
     outputs:
       mommy_version: ${{ steps.output_version.outputs.MOMMY_VERSION }}
