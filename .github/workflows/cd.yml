@@ -1,38 +1,39 @@
 name: CD
 
-on: [push]
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run'
+        type: boolean
+        default: true
 
 jobs:
-  build-netbsd:
-    runs-on: macos-12
+  pre-flight-checks:
+    runs-on: ubuntu-latest
+    outputs:
+      mommy_version: ${{ steps.output_version.outputs.MOMMY_VERSION }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           repository: fwdekker/mommy
-      - name: Install fpm && Build package
-        uses: vmactions/netbsd-vm@v0
+      - name: Extract mommy's version number
+        run: echo "MOMMY_VERSION=v$(head -n 1 ./version)" >> "$GITHUB_ENV"
+      - name: Output mommy's version number
+        id: output_version
+        run: echo "MOMMY_VERSION=$MOMMY_VERSION" >> "$GITHUB_OUTPUT"
+      - name: Stop if release exists
+        if: ${{ git show-ref --tags "v1.2.0" --quiet }}
+        run: exit 1
+
+
+  run-a-thing:
+    needs: [ pre-flight-checks ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        if: ${{ ! github.event.inputs.dry_run }}
         with:
-          usesh: true
-          prepare: |
-            set -e
-            export PATH="/usr/sbin:$PATH"  # Add 'pkg_*' commands to path
-
-            echo "::group::Install basic packages"
-            pkg_add git gmake mozilla-rootcerts-openssl
-            echo "::endgroup::"
-
-            echo "::group::Install fpm"
-            pkg_add ruby
-            /usr/pkg/bin/gem install --no-document fpm
-            pkg_add pkg_install  # This is necessary to make 'fpm' work with 'pkgin' format for some reason
-            echo "::endgroup::"
-
-            echo "::group::Ignore ownership issues"
-            git config --global --add safe.directory "$GITHUB_WORKSPACE"
-            echo "::endgroup::"
-          run: |
-            set -e
-            export PATH="/usr/sbin:$PATH"  # Add 'pkg_*' commands to path
-
-            gmake dist/netbsd
+          repository: fwdekker/mommy
