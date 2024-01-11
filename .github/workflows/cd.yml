@@ -26,6 +26,7 @@ jobs:
         run: echo "MOMMY_VERSION=$MOMMY_VERSION" >> "$GITHUB_OUTPUT"
       - name: Check if release already exists
         run: |
+          git tag
           ! git show-ref --tags "v1.2.0" --quiet && echo "Passed" || echo "Failed"
 
   run-a-thing:
