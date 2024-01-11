@@ -18,8 +18,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: fwdekker/mommy
-          fetch-tags: true
-      - name: Fetch ags
+      - name: Fetch tags
+        # Using `fetch-tags` option of `actions/checkout` does not work properly!
         run: git fetch --prune --unshallow --tags
       - name: Extract mommy's version number
         run: echo "MOMMY_VERSION=v$(head -n 1 ./version)" >> "$GITHUB_ENV"
@@ -28,8 +28,7 @@ jobs:
         run: echo "MOMMY_VERSION=$MOMMY_VERSION" >> "$GITHUB_OUTPUT"
       - name: Check if release already exists
         run: |
-          git tag --list
-          ! git show-ref --tags "v1.2.0" --quiet && echo "Passed" || echo "Failed"
+          ! git show-ref --tags "v1.2.0" --quiet
 
   run-a-thing:
     needs: [ pre-flight-checks ]
