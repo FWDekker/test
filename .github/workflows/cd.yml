@@ -18,6 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: fwdekker/mommy
+          fetch-tags: true
       - name: Extract mommy's version number
         run: echo "MOMMY_VERSION=v$(head -n 1 ./version)" >> "$GITHUB_ENV"
       - name: Output mommy's version number
