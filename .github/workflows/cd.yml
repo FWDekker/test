@@ -1,19 +1,38 @@
+name: CD
+
 on: [push]
+
 jobs:
-  netbsd-job:
-    runs-on: ubuntu-22.04
+  build-netbsd:
+    runs-on: macos-12
     steps:
-      - uses: vmactions/netbsd-vm@v1
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
+          repository: fwdekker/mommy
+      - name: Install fpm && Build package
+        uses: vmactions/netbsd-vm@v0
+        with:
+          usesh: true
+          prepare: |
+            set -e
+            export PATH="/usr/sbin:$PATH"  # Add 'pkg_*' commands to path
+
+            echo "::group::Install basic packages"
+            pkg_add git gmake mozilla-rootcerts-openssl
+            echo "::endgroup::"
+
+            echo "::group::Install fpm"
+            pkg_add ruby
+            /usr/pkg/bin/gem install --no-document fpm
+            pkg_add pkg_install  # This is necessary to make 'fpm' work with 'pkgin' format for some reason
+            echo "::endgroup::"
+
+            echo "::group::Ignore ownership issues"
+            git config --global --add safe.directory "$GITHUB_WORKSPACE"
+            echo "::endgroup::"
           run: |
             set -e
+            export PATH="/usr/sbin:$PATH"  # Add 'pkg_*' commands to path
 
-            touch packlist buildinfo
-
-            echo "::group::Without buildinfo"
-            /usr/sbin/pkg_create -c -comment -d -desc -f packlist pkg-name.tgz
-            echo "::endgroup::"
-
-            echo "::group::With buildinfo"
-            /usr/sbin/pkg_create -B ./buildinfo -c -comment -d -desc -f packlist pkg-name.tgz
-            echo "::endgroup::"
+            gmake dist/netbsd
