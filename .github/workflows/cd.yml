@@ -30,7 +30,7 @@ jobs:
         id: output_version
         run: echo "MOMMY_VERSION=$MOMMY_VERSION" >> "$GITHUB_OUTPUT"
       - name: Check if release already exists
-        if: ${{ github.event.inputs.dry_run == "false" }}
+        if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
           ! git show-ref --tags "$MOMMY_VERSION" --quiet
 
@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check in yml
-        if: ${{ github.event.inputs.dry_run == "false" }}
+        if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
           echo "::group::NOT A DRY RUN"
           echo "::endgroup::"
