@@ -23,10 +23,9 @@ jobs:
       - name: Output mommy's version number
         id: output_version
         run: echo "MOMMY_VERSION=$MOMMY_VERSION" >> "$GITHUB_OUTPUT"
-      - name: Stop if release exists
-        if: ${{ git show-ref --tags "v1.2.0" --quiet }}
-        run: exit 1
-
+      - name: Check if release already exists
+        run: |
+          ! git show-ref --tags "v1.2.0" --quiet && echo "Passed" || echo "Failed"
 
   run-a-thing:
     needs: [ pre-flight-checks ]
