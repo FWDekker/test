@@ -1,71 +1,19 @@
-name: 🧪 cd~
-
-on:
-  workflow_dispatch:
-    inputs:
-      dry_run:
-        description: "Dry run"
-        type: boolean
-        default: true
-
+on: [push]
 jobs:
-  pre-flight-checks:
+  netbsd-job:
     runs-on: ubuntu-latest
-    outputs:
-      MOMMY_VERSION: ${{ steps.mommy_version.outputs.MOMMY_VERSION }}
     steps:
-      - name: Print inputs
-        run: |
-          echo "dry_run: ${{ github.event.inputs.dry_run }}"
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: vmactions/netbsd-vm@v1
         with:
-          repository: fwdekker/mommy
-      - name: Extract mommy's version number
-        id: mommy_version
-        run: |
-          MOMMY_VERSION="v$(head -n 1 ./version)"
-          echo "MOMMY_VERSION=$MOMMY_VERSION" >> "$GITHUB_ENV"
-          echo "MOMMY_VERSION=$MOMMY_VERSION" >> "$GITHUB_OUTPUT"
-      - name: Check if release already exists
-        if: ${{ github.event.inputs.dry_run == 'false' }}
-        # Using `fetch-tags` option of `actions/checkout` does not work properly!
-        run: |
-          git fetch --prune --unshallow --tags
-          ! git show-ref --tags "$MOMMY_VERSION" --quiet
+          run: |
+            set -e
 
-  intermediate:
-    needs: [ pre-flight-checks ]
-    runs-on: ubuntu-latest
+            touch packlist buildinfo
 
-    env:
-      MOMMY_VERSION: ${{ needs.pre-flight-checks.outputs.MOMMY_VERSION }}
-
-    steps:
-      - name: Output version
-        run: echo "$MOMMY_VERSION"
-
-  run-a-thing:
-    needs: [ pre-flight-checks, intermediate ]
-    runs-on: ubuntu-latest
-
-    env:
-      MOMMY_VERSION: ${{ needs.pre-flight-checks.outputs.MOMMY_VERSION }}
-
-    steps:
-      - name: Check in yml
-        if: ${{ github.event.inputs.dry_run == 'false' }}
-        run: |
-          echo "::group::NOT A DRY RUN"
-          echo "::endgroup::"
-      - name: Check inside run
-        run: |
-          if [ "${{ github.event.inputs.dry_run }}" = "false" ]; then
-            echo "::group::NOT A DRY RUN"
+            echo "::group::Without buildinfo"
+            /usr/sbin/pkg_create -c -comment -d -desc -f packlist pkg-name.tgz
             echo "::endgroup::"
-          else
-            echo "::group::A DRY RUN"
+
+            echo "::group::With buildinfo"
+            /usr/sbin/pkg_create -B ./buildinfo -c -comment -d -desc -f packlist pkg-name.tgz
             echo "::endgroup::"
-          fi;
-      - name: Output version
-        run: echo "$MOMMY_VERSION"
