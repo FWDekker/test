@@ -5,7 +5,8 @@ jobs:
     steps:
       - uses: vmactions/netbsd-vm@v1
         with:
-          run: |
+          prepare: |
+            set -e
             touch packlist buildinfo
 
             echo "::group::Without buildinfo"
