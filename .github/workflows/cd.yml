@@ -7,12 +7,14 @@ jobs:
         with:
           prepare: |
             set -e
+            export PATH="/usr/sbin:$PATH"  # Add 'pkg_*' commands to path
+
             touch packlist buildinfo
 
             echo "::group::Without buildinfo"
-            /usr/sbin/pkg_create -c -comment -d -desc -f packlist pkg-name.tgz
+            pkg_create -c -comment -d -desc -f packlist pkg-name.tgz
             echo "::endgroup::"
 
             echo "::group::With buildinfo"
-            /usr/sbin/pkg_create -B ./buildinfo -c -comment -d -desc -f packlist pkg-name.tgz
+            pkg_create -B ./buildinfo -c -comment -d -desc -f packlist pkg-name.tgz
             echo "::endgroup::"
