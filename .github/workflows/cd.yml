@@ -3,8 +3,9 @@ jobs:
   netbsd-job:
     runs-on: ubuntu-latest
     steps:
-      - uses: vmactions/netbsd-vm@v1
+      - uses: cross-platform-actions/action@v0.22.0
         with:
+          operating_system: netbsd
           run: |
             set -e
 
