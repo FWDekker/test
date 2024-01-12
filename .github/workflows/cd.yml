@@ -3,11 +3,10 @@ jobs:
   netbsd-job:
     runs-on: ubuntu-latest
     steps:
-      - uses: cross-platform-actions/action@v0.22.0
+      - uses: vmactions/netbsd-vm@v1
         with:
-          operating_system: netbsd
-          version: "9.3"
-          run: |
+          usesh: true
+          prepare: |
             set -e
 
             touch packlist buildinfo
