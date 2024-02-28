@@ -1,20 +1,22 @@
-on: [push]
+on:
+  workflow_dispatch:
+    inputs:
+      a:
+        description: 'dry run'
+        type: boolean
+        default: false
+      b:
+        description: 'create mommy release'
+        type: boolean
+        default: false
+
 jobs:
-  netbsd-job:
+  my-job:
     runs-on: ubuntu-latest
     steps:
-      - uses: vmactions/netbsd-vm@v1
-        with:
-          prepare: |
-            set -e
-            export PATH="/usr/sbin:$PATH"  # Add 'pkg_*' commands to path
-
-            touch packlist buildinfo
-
-            echo "::group::Without buildinfo"
-            pkg_create -c -comment -d -desc -f packlist pkg-name.tgz
-            echo "::endgroup::"
-
-            echo "::group::With buildinfo"
-            pkg_create -B ./buildinfo -c -comment -d -desc -f packlist pkg-name.tgz
-            echo "::endgroup::"
+      - name: "&& inside {{}}"
+        if: ${{ github.event.inputs.a == 'true' && github.event.inputs.b == 'true' }}
+        run: echo "OK!"
+      - name: "&& outside {{}}"
+        if: ${{ github.event.inputs.a == 'true' }} && ${{ github.event.inputs.b == 'true' }}
+        run: echo "OK!"
