@@ -2,11 +2,11 @@ on:
   workflow_dispatch:
     inputs:
       a:
-        description: 'dry run'
+        description: 'a'
         type: boolean
         default: false
       b:
-        description: 'create mommy release'
+        description: 'b'
         type: boolean
         default: false
 
