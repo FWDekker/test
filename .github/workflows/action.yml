@@ -19,8 +19,17 @@ jobs:
       - name: Bump
         if: ${{ github.event.inputs.a == 'true' && github.event.inputs.b == 'true' }}
         run: |
-          echo "OK!"
+          echo "Minimal-overhead checkout"
+          git fetch origin latest
+          git branch latest FETCH_HEAD
           git checkout latest
+
+          echo "Merge and push"
           git merge --ff-only
           git push
+
+          echo "Go back!"
           git checkout -
+
+          echo "Where am I?"
+          git branch
