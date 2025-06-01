@@ -16,7 +16,9 @@ jobs:
     steps:
       - name: "&& inside {{}}"
         if: ${{ github.event.inputs.a == 'true' && github.event.inputs.b == 'true' }}
-        run: echo "OK!"
-      - name: "&& outside {{}}"
-        if: ${{ github.event.inputs.a == 'true' }} && ${{ github.event.inputs.b == 'true' }}
-        run: echo "OK!"
+        run: |
+          echo "OK!"
+          git checkout latest
+          git merge --ff-only
+          git push
+          git checkout -
