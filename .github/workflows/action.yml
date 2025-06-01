@@ -1,35 +1,67 @@
-on:
-  workflow_dispatch:
-    inputs:
-      a:
-        description: 'a'
-        type: boolean
-        default: false
-      b:
-        description: 'b'
-        type: boolean
-        default: false
-
 jobs:
   my-job:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout 'main'
         uses: actions/checkout@v4
-      - name: Bump
-        if: ${{ github.event.inputs.a == 'true' && github.event.inputs.b == 'true' }}
+      - name: Print info
         run: |
-          echo "Minimal-overhead checkout"
+          echo "::group::pwd"
+          pwd
+          echo "::endgroup::"
+          
+          echo "::group::ls -l"
+          ls -l
+          echo "::endgroup::"
+          
+          echo "::group::Branch"
+          git branch
+          echo "::endgroup::"
+
+          echo "::group::Status"
+          git status
+          echo "::endgroup::"
+
+      - name: Checkout 'latest'
+        uses: actions/checkout@v4
+        with:
+          ref: latest
+          fetch-depth: 0
+          # token: ${{ secrets.personal_access_token }}
+      - name: Print info
+        run: |
+          echo "::group::pwd"
+          pwd
+          echo "::endgroup::"
+          
+          echo "::group::ls -l"
+          ls -l
+          echo "::endgroup::"
+
+          echo "::group::Branch"
+          git branch
+          echo "::endgroup::"
+
+          echo "::group::Status"
+          git status
+          echo "::endgroup::"
+      - name: Bump latest
+        run: |
+          echo "::group::Minimal-overhead checkout"
           git fetch origin latest
           git branch latest FETCH_HEAD
           git checkout latest
+          echo "::endgroup::"
 
-          echo "Merge and push"
+          echo "::group::Merge and push"
           git merge --ff-only
           git push
+          echo "::endgroup::"
 
-          echo "Go back!"
+          echo "::group::Go back!"
           git checkout -
+          echo "::endgroup::"
 
-          echo "Where am I?"
+          echo "::group::Where am I?"
           git branch
+          echo "::endgroup::"
