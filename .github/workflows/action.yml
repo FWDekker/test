@@ -50,6 +50,6 @@ jobs:
       - name: Bump latest
         run: |
           echo "::group::Merge and push"
-          git merge --ff-only main
+          git merge --ff-only origin/main
           git push
           echo "::endgroup::"
