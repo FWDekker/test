@@ -1,3 +1,5 @@
+on: workflow_dispatch
+
 jobs:
   my-job:
     runs-on: ubuntu-latest
