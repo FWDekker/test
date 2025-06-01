@@ -49,12 +49,6 @@ jobs:
           echo "::endgroup::"
       - name: Bump latest
         run: |
-          echo "::group::Minimal-overhead checkout"
-          git fetch origin latest
-          git branch latest FETCH_HEAD
-          git checkout latest
-          echo "::endgroup::"
-
           echo "::group::Merge and push"
           git merge --ff-only
           git push
