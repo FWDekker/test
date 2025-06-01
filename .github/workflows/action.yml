@@ -29,7 +29,7 @@ jobs:
         with:
           ref: latest
           fetch-depth: 0
-          # token: ${{ secrets.personal_access_token }}
+          token: ${{ secrets.personal_access_token }}
       - name: Print info
         run: |
           echo "::group::pwd"
@@ -52,12 +52,4 @@ jobs:
           echo "::group::Merge and push"
           git merge --ff-only
           git push
-          echo "::endgroup::"
-
-          echo "::group::Go back!"
-          git checkout -
-          echo "::endgroup::"
-
-          echo "::group::Where am I?"
-          git branch
           echo "::endgroup::"
