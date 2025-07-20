@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    paths-ignore:
+      - 'CHANGELOG.md'
+      - 'README.md'
+      - '.github/**.md'
+      - '.github/img/**'
+  pull_request:
+    paths-ignore:
+      - 'CHANGELOG.md'
+      - 'README.md'
+      - '.github/**.md'
+      - '.github/img/**'
+
+jobs:
+  test-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          add-job-summary: on-failure
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+      - name: Run tests
+        run: xvfb-run --auto-servernum ./gradlew check
+      - name: Store coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: build/reports/kover/report.xml
+
+  test-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          add-job-summary: on-failure
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+      - name: Run tests
+        run: ./gradlew check
+
+  test-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          add-job-summary: on-failure
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+      - name: Run tests
+        run: ./gradlew check
+
+  upload-coverage:
+    needs: [ test-linux, test-macos, test-windows ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Load coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v5
+        with:
+          fail_ci_if_error: true
+          files: report.xml
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
