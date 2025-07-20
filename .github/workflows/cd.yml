@@ -25,6 +25,8 @@ jobs:
         run: |
           printf "dry_run: %s\n" "${{ github.event.inputs.dry_run }}"
           printf "checklist_complete: '%s'\n" "${{ github.event.inputs.checklist_complete }}"
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Extract Randomness version number
         id: my_version
         run: |
