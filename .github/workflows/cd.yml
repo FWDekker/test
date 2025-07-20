@@ -47,7 +47,7 @@ jobs:
           test "$MY_VERSION" = "${MY_VERSION#9.9.9}"
       - name: "Check: Version is listed in changelog"
         if: ${{ github.event.inputs.dry_run == 'false' }}
-        run: grep -qF "# [${MY_VERSION#v}] --" CHANGELOG.md
+        run: grep -qF "## ${MY_VERSION#v} -- " CHANGELOG.md
       - name: "Check: Release does not already exist"
         if: ${{ github.event.inputs.dry_run == 'false' }}
         # Using `fetch-tags` option of `actions/checkout` does not work properly

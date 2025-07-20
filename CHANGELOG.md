@@ -1,5 +1,5 @@
 # Changelog
-## 9.9.9-unreleased
+## 9.9.9 -- 2025-07-21
 Delete this sentence. And improve these logs.
 
 ### Changed
