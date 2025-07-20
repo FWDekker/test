@@ -103,7 +103,7 @@ jobs:
         run: |
           printf "%s\n\n%s\n" \
             "This plugin is also available on the [plugin repository](https://plugins.jetbrains.com/plugin/9836-randomness)." \
-            "$(awk "/^## ${MY_VERSION#v}/{flag=1}; /^## [^(${MY_VERSION#v})]/{flag=0}; {if (flag==1) {print}}" CHANGELOG.md)" \
+            "$(awk "/^## ${MY_VERSION#v}/{flag=1;next}; /^## [^(${MY_VERSION#v})]/{flag=0}; {if (flag==1) {print}}" CHANGELOG.md)" \
             | tee RELEASE_NOTES.md
       - name: Publish release
         # if: ${{ github.event.inputs.dry_run == 'false' }}
