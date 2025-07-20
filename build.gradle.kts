@@ -14,6 +14,13 @@ import java.time.Year
 
 fun properties(key: String): String = project.findProperty(key).toString()
 
+fun getEnv(key: String): String =
+    System.getenv(key)
+        .also {
+            requireNotNull(it) { "Environment variable '$key' must be set." }
+            require(it.isNotBlank()) { "Environment variable '$key' must not be blank." }
+        }
+
 
 /// Plugins
 plugins {
@@ -128,15 +135,13 @@ tasks {
         }
 
         signing {
-            if (System.getenv("CERTIFICATE_CHAIN") != null) {
-                certificateChainFile = file(System.getenv("CERTIFICATE_CHAIN"))
-                privateKeyFile = file(System.getenv("PRIVATE_KEY"))
-                password = System.getenv("PRIVATE_KEY_PASSWORD")
-            }
+            certificateChainFile = file(getEnv("CERTIFICATE_CHAIN"))
+            privateKeyFile = file(getEnv("PRIVATE_KEY"))
+            password = getEnv("PRIVATE_KEY_PASSWORD")
         }
 
         publishing {
-            token = System.getenv("PUBLISH_TOKEN")
+            token = getEnv("PUBLISH_TOKEN")
 
             if (project.hasProperty("publish.beta"))
                 channels = listOf("beta")
