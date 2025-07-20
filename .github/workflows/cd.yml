@@ -107,6 +107,8 @@ jobs:
             | tee RELEASE_NOTES.md
       - name: Publish release
         # if: ${{ github.event.inputs.dry_run == 'false' }}
+        env:
+          GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
           gh release create "$MY_VERSION" \
             "build/distributions/"*"-signed.zip" \
