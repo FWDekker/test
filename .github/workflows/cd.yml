@@ -107,7 +107,7 @@ jobs:
           target_commitish: main
           tag_name: ${{ env.MY_VERSION }}
           body_path: RELEASE_NOTES.md
-          files: build/distributions/
+          files: build/distributions/*
           draft: false
           prerelease: false
 
