@@ -7,7 +7,6 @@ on:
         description: 'I have read and completed the release checklist'
         type: boolean
         default: false
-        required: true
       dry_run:
         description: 'Dry run'
         type: boolean
@@ -25,6 +24,7 @@ jobs:
       - name: Print inputs
         run: |
           printf "dry_run: %s\n" "${{ github.event.inputs.dry_run }}"
+          printf "checklist_complete: '%s'\n" "${{ github.event.inputs.checklist_complete }}"
       - name: Extract Randomness version number
         id: my_version
         run: |
@@ -32,10 +32,13 @@ jobs:
           printf "Found version '%s'.\n" "$MY_VERSION"
           printf "MY_VERSION=%s\n" "$MY_VERSION" >> "$GITHUB_ENV"
           printf "MY_VERSION=%s\n" "$MY_VERSION" >> "$GITHUB_OUTPUT"
+      - name: "Check: Release checklist completed"
+        run: |
+          ! test '${{ github.event.inputs.checklist_complete }}' = 'false'
       - name: "Check: Current branch is 'main'"
         if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
-          ${{ github.ref }} == 'refs/heads/master'
+          test '${{ github.ref }}' = 'refs/heads/master'
       - name: "Check: Version does not start with 9.9.9"
         if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
