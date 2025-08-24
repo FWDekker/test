@@ -7,7 +7,6 @@ jobs:
       - name: Checkout 'main'
         uses: actions/checkout@v4
       - name: Check
-        if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
           grep -qF "TODO" CONTAINS.md; test $? -eq 1
 
@@ -17,7 +16,6 @@ jobs:
       - name: Checkout 'main'
         uses: actions/checkout@v4
       - name: Check
-        if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
           grep -qF "TODO" CONTAINS.md
           test $? -eq 1
@@ -28,7 +26,6 @@ jobs:
       - name: Checkout 'main'
         uses: actions/checkout@v4
       - name: Check
-        if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
           set +e
           grep -qF "TODO" CONTAINS.md; test $? -eq 1
@@ -39,7 +36,6 @@ jobs:
       - name: Checkout 'main'
         uses: actions/checkout@v4
       - name: Check
-        if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
           set +e
           grep -qF "TODO" CONTAINS.md
@@ -52,7 +48,6 @@ jobs:
       - name: Checkout 'main'
         uses: actions/checkout@v4
       - name: Check
-        if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
           grep -qF "TODO" DOES-NOT-EXIST.md; test $? -eq 1
 
@@ -62,7 +57,6 @@ jobs:
       - name: Checkout 'main'
         uses: actions/checkout@v4
       - name: Check
-        if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
           grep -qF "TODO" DOES-NOT-EXIST.md
           test $? -eq 1
@@ -73,7 +67,6 @@ jobs:
       - name: Checkout 'main'
         uses: actions/checkout@v4
       - name: Check
-        if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
           set +e
           grep -qF "TODO" DOES-NOT-EXIST.md; test $? -eq 1
@@ -84,7 +77,6 @@ jobs:
       - name: Checkout 'main'
         uses: actions/checkout@v4
       - name: Check
-        if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
           set +e
           grep -qF "TODO" DOES-NOT-EXIST.md
@@ -97,7 +89,6 @@ jobs:
       - name: Checkout 'main'
         uses: actions/checkout@v4
       - name: Check
-        if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
           grep -qF "TODO" NO-CONTAINS.md; test $? -eq 1
 
@@ -107,7 +98,6 @@ jobs:
       - name: Checkout 'main'
         uses: actions/checkout@v4
       - name: Check
-        if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
           grep -qF "TODO" NO-CONTAINS.md
           test $? -eq 1
@@ -118,7 +108,6 @@ jobs:
       - name: Checkout 'main'
         uses: actions/checkout@v4
       - name: Check
-        if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
           set +e
           grep -qF "TODO" NO-CONTAINS.md; test $? -eq 1
@@ -129,7 +118,6 @@ jobs:
       - name: Checkout 'main'
         uses: actions/checkout@v4
       - name: Check
-        if: ${{ github.event.inputs.dry_run == 'false' }}
         run: |
           set +e
           grep -qF "TODO" NO-CONTAINS.md
