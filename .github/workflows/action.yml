@@ -1,56 +1,62 @@
 on: workflow_dispatch
 
 jobs:
-  my-job:
+  must-fail--set-e:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 'main'
         uses: actions/checkout@v4
-      - name: Print info
+      - name: Check
         run: |
-          echo "::group::pwd"
-          pwd
-          echo "::endgroup::"
-          
-          echo "::group::ls -l"
-          ls -l
-          echo "::endgroup::"
-          
-          echo "::group::Branch"
-          git branch
-          echo "::endgroup::"
+          set +e
+          grep -qF "TODO" CONTAINS.md
+          test $? -eq 1
 
-          echo "::group::Status"
-          git status
-          echo "::endgroup::"
-
-      - name: Checkout 'latest'
+  must-crash--set-e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 'main'
         uses: actions/checkout@v4
-        with:
-          ref: latest
-          fetch-depth: 0
-          fetch-tags: true
-          token: ${{ secrets.personal_access_token }}
-      - name: Print info
+      - name: Check
         run: |
-          echo "::group::pwd"
-          pwd
-          echo "::endgroup::"
-          
-          echo "::group::ls -l"
-          ls -l
-          echo "::endgroup::"
+          set +e
+          grep -qF "TODO" DOES-NOT-EXIST.md
+          test $? -eq 1
 
-          echo "::group::Branch"
-          git branch
-          echo "::endgroup::"
-
-          echo "::group::Status"
-          git status
-          echo "::endgroup::"
-      - name: Bump latest
+  must-pass--set-e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 'main'
+        uses: actions/checkout@v4
+      - name: Check
         run: |
-          echo "::group::Merge and push"
-          git merge --ff-only origin/main
-          git push
-          echo "::endgroup::"
+          set +e
+          grep -qF "TODO" NO-CONTAINS.md
+          test $? -eq 1
+
+  must-fail--negate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 'main'
+        uses: actions/checkout@v4
+      - name: Check
+        run: |
+          ! grep -qF "TODO" CONTAINS.md
+
+  must-crash--negate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 'main'
+        uses: actions/checkout@v4
+      - name: Check
+        run: |
+          ! grep -qF "TODO" DOES-NOT-EXIST.md
+
+  must-pass--negate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 'main'
+        uses: actions/checkout@v4
+      - name: Check
+        run: |
+          ! grep -qF "TODO" NO-CONTAINS.md
