@@ -19,4 +19,5 @@ jobs:
           git add --all
           git commit -m "Reset version number and changelog"
 
+          git push --set-upstream origin main:reset-version
           gh pr create --fill --assignee fwdekker
