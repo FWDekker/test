@@ -1,62 +1,20 @@
 on: workflow_dispatch
 
 jobs:
-  must-fail--set-e:
+  my-task:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout 'main'
-        uses: actions/checkout@v4
-      - name: Check
+      - name: Reset version number and changelog
+        env:
+          GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
-          set +e
-          grep -qF "TODO" CONTAINS.md
-          test $? -eq 1
+          git checkout -b reset-version
+          sed -i "s/version=.*/version=9.9.9-unreleased/" gradle.properties
+          sed -i "s/# Changelog/# Changelog\n## 9.9.9-unreleased\n### Added\n### Changed\n### Deprecated\n### Removed\n### Fixed\n### Security\n\n/" CHANGELOG.md
 
-  must-crash--set-e:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout 'main'
-        uses: actions/checkout@v4
-      - name: Check
-        run: |
-          set +e
-          grep -qF "TODO" DOES-NOT-EXIST.md
-          test $? -eq 1
+          git config --global user.name "fwdekkerbot"
+          git config --global user.email "bot@fwdekker.com"
+          git add --all
+          git commit -m "Reset version number and changelog"
 
-  must-pass--set-e:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout 'main'
-        uses: actions/checkout@v4
-      - name: Check
-        run: |
-          set +e
-          grep -qF "TODO" NO-CONTAINS.md
-          test $? -eq 1
-
-  must-fail--negate:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout 'main'
-        uses: actions/checkout@v4
-      - name: Check
-        run: |
-          ! grep -qF "TODO" CONTAINS.md
-
-  must-crash--negate:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout 'main'
-        uses: actions/checkout@v4
-      - name: Check
-        run: |
-          ! grep -qF "TODO" DOES-NOT-EXIST.md
-
-  must-pass--negate:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout 'main'
-        uses: actions/checkout@v4
-      - name: Check
-        run: |
-          ! grep -qF "TODO" NO-CONTAINS.md
+          gh pr create --fill --assignee fwdekker
