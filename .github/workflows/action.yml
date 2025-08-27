@@ -4,6 +4,8 @@ jobs:
   my-task:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Reset version number and changelog
         env:
           GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
